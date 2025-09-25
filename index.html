@@ -1,0 +1,575 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WavePlayer — minimal music site</title>
+  <meta name="description" content="A small music site with a media player that plays audio from URL." />
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#6ee7b7;
+      --muted:#9aa4b2;
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.02);
+      --shadow: 0 8px 30px rgba(2,6,23,0.6);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: linear-gradient(180deg,#071229 0%, #07192b 60%);
+      color:#e6eef6;
+      -webkit-font-smoothing:antialiased;
+      display:flex;align-items:center;justify-content:center;
+      padding:24px;
+    }
+
+    .player-wrap{
+      width:100%;
+      max-width:920px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:14px;
+      padding:20px;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,0.03);
+      display:grid;
+      grid-template-columns: 1fr 320px;
+      gap:18px;
+      align-items:start;
+    }
+
+    .left{
+      min-width:0;
+    }
+
+    .cover{
+      background:linear-gradient(135deg,#0b1220,#142033);
+      border-radius:10px;
+      padding:14px;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .art{
+      width:92px;height:92px;border-radius:8px;background:
+      linear-gradient(135deg,var(--accent),#60a5fa);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#022;
+      font-size:20px;flex:0 0 92px;
+      box-shadow:0 6px 18px rgba(0,0,0,0.6);
+    }
+    .meta{
+      min-width:0;
+    }
+    .title{
+      font-size:18px;font-weight:700;margin:0 0 6px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .subtitle{font-size:13px;color:var(--muted);margin:0 0 12px 0}
+
+    .controls{
+      display:flex;gap:10px;align-items:center;
+    }
+    button.btn{
+      background:var(--glass);
+      border:none;color:var(--accent);
+      padding:10px 14px;border-radius:10px;cursor:pointer;
+      display:inline-flex;gap:8px;align-items:center;font-weight:600;
+    }
+    button.btn.secondary{color:#cfe7ff;background:var(--glass-2)}
+    button.icon{
+      background:transparent;border:1px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:#cfe7ff;cursor:pointer;
+    }
+
+    .progress-wrap{margin-top:16px}
+    .progress{
+      width:100%;height:10px;background:rgba(255,255,255,0.04);border-radius:99px;position:relative;cursor:pointer;
+    }
+    .progress .bar{
+      height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:0%;border-radius:99px;
+    }
+    .time{
+      display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;
+    }
+
+    .playlist{
+      margin-top:16px;background:rgba(255,255,255,0.018);padding:10px;border-radius:10px;max-height:240px;overflow:auto;
+    }
+    .pl-item{
+      display:flex;align-items:center;gap:10px;padding:8px;border-radius:8px;color:#dbeeff;
+    }
+    .pl-item:hover{background:rgba(255,255,255,0.02)}
+    .pl-title{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .pl-meta{font-size:12px;color:var(--muted)}
+
+    .right{
+      display:flex;flex-direction:column;gap:12px;
+    }
+    .url-input{
+      background:transparent;border:1px dashed rgba(255,255,255,0.04);padding:14px;border-radius:10px;color:#dbeeff;
+      min-height:80px;display:flex;flex-direction:column;gap:8px;
+    }
+    .url-input input{background:transparent;border:none;outline:none;color:inherit;font-size:14px;width:100%}
+    .url-hint{font-size:12px;color:var(--muted)}
+
+    .small{
+      font-size:13px;color:var(--muted);
+    }
+
+    .extras{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin-top:8px}
+    .slider{width:100%}
+    .vol-row{display:flex;gap:8px;align-items:center}
+    .muted{opacity:0.6}
+    .footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+
+    @media (max-width:880px){
+      .player-wrap{grid-template-columns:1fr; padding:16px}
+      .right{order:2}
+    }
+  </style>
+</head>
+<body>
+  <main class="player-wrap" role="main" aria-label="Music player">
+    <section class="left">
+      <div class="cover" aria-hidden="false">
+        <div class="art" id="coverArt">WP</div>
+        <div class="meta">
+          <h1 class="title" id="trackTitle">SoundHelix Song 1</h1>
+          <p class="subtitle" id="trackArtist">Source: soundhelix.com</p>
+
+          <div class="controls" role="group" aria-label="player controls">
+            <button class="icon" id="prevBtn" title="Previous (Shift + ←)">⏮</button>
+            <button class="btn" id="playBtn" title="Play / Pause (Space)">▶ Play</button>
+            <button class="icon" id="nextBtn" title="Next (Shift + →)">⏭</button>
+
+            <div style="flex:1"></div>
+
+            <button class="icon" id="shuffleBtn" title="Shuffle">🔀</button>
+            <button class="icon" id="loopBtn" title="Loop">🔁</button>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress" id="progressBar" aria-label="seek bar" role="slider" tabindex="0">
+              <div class="bar" id="progressFill"></div>
+            </div>
+            <div class="time"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="playlist" id="playlist" aria-live="polite" aria-label="Playlist">
+        <!-- playlist items injected here -->
+      </div>
+    </section>
+
+    <aside class="right" aria-label="Playback options">
+      <div class="url-input" id="urlDrop" tabindex="0">
+        <label class="small">Add audio URL to playlist (paste, press Enter, or drop file/URL) <span class="url-hint">(mp3, m4a, ogg — CORS dependent)</span></label>
+        <input id="urlInput" placeholder="https://example.com/track.mp3" aria-label="audio url input" />
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button class="btn secondary" id="addBtn">➕ Add to playlist</button>
+          <button class="btn" id="playNowBtn">▶ Play now</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="vol-row">
+          <label class="small muted">Volume</label>
+          <input id="volume" class="slider" type="range" min="0" max="1" step="0.01" value="0.8" aria-label="volume"/>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <button class="icon" id="muteBtn" title="Mute">🔈</button>
+          <div style="flex:1;text-align:right" class="small muted">Space: play/pause · ←/→ seek · ↑/↓ volume</div>
+        </div>
+      </div>
+
+      <div class="footer">
+        Built with ❤️ — paste any direct audio URL. Example file used in demo is from SoundHelix.
+      </div>
+    </aside>
+  </main>
+
+  <!-- Audio element (hidden) -->
+  <audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
+
+  <script>
+    // ----- Player logic -----
+    const audio = document.getElementById('audio');
+    const playBtn = document.getElementById('playBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const loopBtn = document.getElementById('loopBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const currentTimeEl = document.getElementById('currentTime');
+    const durationEl = document.getElementById('duration');
+    const playlistEl = document.getElementById('playlist');
+    const urlInput = document.getElementById('urlInput');
+    const addBtn = document.getElementById('addBtn');
+    const playNowBtn = document.getElementById('playNowBtn');
+    const volumeSlider = document.getElementById('volume');
+    const muteBtn = document.getElementById('muteBtn');
+    const coverArt = document.getElementById('coverArt');
+    const trackTitle = document.getElementById('trackTitle');
+    const trackArtist = document.getElementById('trackArtist');
+    const urlDrop = document.getElementById('urlDrop');
+
+    // Sample playlist with publicly-available sample MP3 (CORS depends on the host)
+    const defaultSample = {
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
+      title: 'SoundHelix Song 1',
+      artist: 'SoundHelix'
+    };
+
+    let playlist = [ defaultSample ];
+    let currentIndex = 0;
+    let isShuffle = false;
+    let isLoop = false;
+
+    // Initialize
+    function init(){
+      renderPlaylist();
+      loadTrack(currentIndex);
+      audio.volume = parseFloat(volumeSlider.value);
+    }
+
+    // Render playlist
+    function renderPlaylist(){
+      playlistEl.innerHTML = '';
+      playlist.forEach((t, i) => {
+        const div = document.createElement('div');
+        div.className = 'pl-item';
+        div.innerHTML = `
+          <div style="width:40px;height:40px;border-radius:6px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#022">
+            ${String(i+1)}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div class="pl-title">${escapeHtml(t.title || getNameFromUrl(t.url))}</div>
+            <div class="pl-meta">${escapeHtml(t.artist || extractHost(t.url))}</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="icon" data-action="play" data-index="${i}" title="Play this">▶</button>
+            <button class="icon" data-action="remove" data-index="${i}" title="Remove">✖</button>
+          </div>
+        `;
+        if(i === currentIndex) div.style.background = 'linear-gradient(90deg, rgba(110,231,183,0.06), rgba(96,165,250,0.02))';
+        playlistEl.appendChild(div);
+      });
+    }
+
+    // Load track by index
+    function loadTrack(index){
+      if(index < 0 || index >= playlist.length) return;
+      currentIndex = index;
+      const track = playlist[index];
+      audio.src = track.url;
+      trackTitle.textContent = track.title || getNameFromUrl(track.url);
+      trackArtist.textContent = track.artist || extractHost(track.url);
+      coverArt.textContent = (track.title || getNameFromUrl(track.url)).slice(0,2).toUpperCase();
+      updatePlayButton();
+      highlightPlaylist();
+      // try to load metadata
+      audio.load();
+    }
+
+    function highlightPlaylist(){
+      const items = playlistEl.querySelectorAll('.pl-item');
+      items.forEach((el, idx) => {
+        el.style.background = idx === currentIndex ? 'linear-gradient(90deg, rgba(110,231,183,0.06), rgba(96,165,250,0.02))' : 'transparent';
+      });
+    }
+
+    // Play / pause toggle
+    function togglePlay(){
+      if(audio.paused) audio.play().catch(e => {
+        console.warn('Play failed:', e);
+        showTemporaryMessage('Playback failed — check URL/CORS or user gesture.');
+      });
+      else audio.pause();
+      updatePlayButton();
+    }
+
+    function updatePlayButton(){
+      playBtn.textContent = audio.paused ? '▶ Play' : '⏸ Pause';
+    }
+
+    // Next / Prev
+    function nextTrack(){
+      if(isShuffle){
+        let next = Math.floor(Math.random()*playlist.length);
+        if(playlist.length > 1 && next === currentIndex){
+          next = (next + 1) % playlist.length;
+        }
+        loadTrack(next);
+        audio.play();
+        return;
+      }
+      let next = currentIndex + 1;
+      if(next >= playlist.length){
+        if(isLoop) next = 0;
+        else {
+          audio.pause();
+          updatePlayButton();
+          return;
+        }
+      }
+      loadTrack(next);
+      audio.play();
+    }
+
+    function prevTrack(){
+      if(audio.currentTime > 4){
+        audio.currentTime = 0;
+        return;
+      }
+      let prev = currentIndex - 1;
+      if(prev < 0){
+        if(isLoop) prev = playlist.length - 1;
+        else { audio.currentTime = 0; return; }
+      }
+      loadTrack(prev);
+      audio.play();
+    }
+
+    // Seek
+    function seekTo(percent){
+      const dur = audio.duration || 0;
+      audio.currentTime = Math.min(dur, Math.max(0, percent*dur));
+    }
+
+    // Utilities
+    function getNameFromUrl(url){
+      try{
+        const u = new URL(url);
+        const s = u.pathname.split('/').filter(Boolean).pop() || u.hostname;
+        return decodeURIComponent(s).replace(/[-_+%20]/g,' ');
+      }catch(e){
+        return url;
+      }
+    }
+    function extractHost(url){
+      try{ return new URL(url).hostname }catch(e){ return '' }
+    }
+    function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) }
+
+    // Playlist operations
+    function addToPlaylist(url, opts = {}){
+      const item = { url: url.trim(), title: opts.title || null, artist: opts.artist || null };
+      playlist.push(item);
+      renderPlaylist();
+      showTemporaryMessage('Added to playlist ✔️');
+    }
+    function removeFromPlaylist(index){
+      if(index < 0 || index >= playlist.length) return;
+      const wasCurrent = index === currentIndex;
+      playlist.splice(index,1);
+      if(wasCurrent){
+        const newIndex = Math.min(index, playlist.length-1);
+        if(newIndex >= 0) loadTrack(newIndex);
+        else {
+          audio.pause();
+          audio.src = '';
+          trackTitle.textContent = '';
+          trackArtist.textContent = '';
+        }
+      } else if(index < currentIndex){
+        currentIndex -= 1;
+      }
+      renderPlaylist();
+    }
+
+    // Events
+    playBtn.addEventListener('click', () => { togglePlay(); });
+    prevBtn.addEventListener('click', prevTrack);
+    nextBtn.addEventListener('click', nextTrack);
+
+    shuffleBtn.addEventListener('click', () => {
+      isShuffle = !isShuffle;
+      shuffleBtn.style.opacity = isShuffle ? 1 : 0.6;
+      showTemporaryMessage('Shuffle ' + (isShuffle ? 'ON' : 'OFF'));
+    });
+    loopBtn.addEventListener('click', () => {
+      isLoop = !isLoop;
+      audio.loop = isLoop;
+      loopBtn.style.opacity = isLoop ? 1 : 0.6;
+      showTemporaryMessage('Loop ' + (isLoop ? 'ON' : 'OFF'));
+    });
+
+    // Progress updates
+    audio.addEventListener('timeupdate', () => {
+      const cur = audio.currentTime || 0;
+      const dur = audio.duration || 0;
+      const pct = dur ? (cur / dur) * 100 : 0;
+      progressFill.style.width = pct + '%';
+      currentTimeEl.textContent = formatTime(cur);
+      durationEl.textContent = isFinite(dur) ? formatTime(dur) : '0:00';
+      updatePlayButton();
+    });
+
+    audio.addEventListener('ended', () => {
+      if(!isLoop) nextTrack();
+    });
+
+    audio.addEventListener('loadedmetadata', () => {
+      durationEl.textContent = isFinite(audio.duration) ? formatTime(audio.duration) : '0:00';
+    });
+
+    // Seek with click/drag on progress bar
+    let isSeeking = false;
+    function progressEventToPct(e){
+      const rect = progressBar.getBoundingClientRect();
+      const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
+      return Math.max(0, Math.min(1, x / rect.width));
+    }
+    progressBar.addEventListener('pointerdown', (e) => {
+      isSeeking = true;
+      progressBar.setPointerCapture(e.pointerId);
+      seekTo(progressEventToPct(e));
+    });
+    progressBar.addEventListener('pointermove', (e) => {
+      if(isSeeking) seekTo(progressEventToPct(e));
+    });
+    progressBar.addEventListener('pointerup', (e) => {
+      isSeeking = false;
+    });
+    progressBar.addEventListener('click', (e) => {
+      seekTo(progressEventToPct(e));
+    });
+
+    // Volume
+    volumeSlider.addEventListener('input', (e) => {
+      audio.volume = parseFloat(e.target.value);
+      muteBtn.textContent = audio.volume > 0 ? '🔈' : '🔇';
+    });
+    muteBtn.addEventListener('click', () => {
+      if(audio.volume > 0){
+        audio.dataset.prevvol = audio.volume;
+        audio.volume = 0;
+        volumeSlider.value = 0;
+        muteBtn.textContent = '🔇';
+      } else {
+        const prev = parseFloat(audio.dataset.prevvol || 0.8);
+        audio.volume = prev;
+        volumeSlider.value = prev;
+        muteBtn.textContent = '🔈';
+      }
+    });
+
+    // Add URL
+    addBtn.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if(!url) { showTemporaryMessage('Paste a URL first'); return; }
+      addToPlaylist(url);
+      urlInput.value = '';
+    });
+    playNowBtn.addEventListener('click', () => {
+      const url = urlInput.value.trim();
+      if(!url){ showTemporaryMessage('Paste a URL first'); return; }
+      addToPlaylist(url);
+      loadTrack(playlist.length-1);
+      audio.play();
+      urlInput.value = '';
+    });
+
+    // Playlist click handling (play/remove)
+    playlistEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const idx = Number(btn.dataset.index);
+      const action = btn.dataset.action;
+      if(action === 'play') {
+        loadTrack(idx);
+        audio.play();
+      } else if(action === 'remove') {
+        removeFromPlaylist(idx);
+      }
+    });
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e) => {
+      if(e.key === ' ' && document.activeElement.tagName !== 'INPUT') {
+        e.preventDefault();
+        togglePlay(); return;
+      }
+      if(e.key === 'ArrowRight' && (e.shiftKey)) { nextTrack(); }
+      else if(e.key === 'ArrowLeft' && (e.shiftKey)) { prevTrack(); }
+      else if(e.key === 'ArrowRight') { audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5); }
+      else if(e.key === 'ArrowLeft') { audio.currentTime = Math.max(0, audio.currentTime - 5); }
+      else if(e.key === 'ArrowUp') { audio.volume = Math.min(1, (audio.volume || 0) + 0.05); volumeSlider.value = audio.volume; }
+      else if(e.key === 'ArrowDown') { audio.volume = Math.max(0, (audio.volume || 0) - 0.05); volumeSlider.value = audio.volume; }
+    });
+
+    // Drag & drop URL or file onto urlDrop
+    ['dragenter','dragover'].forEach(n => urlDrop.addEventListener(n, (e) => { e.preventDefault(); urlDrop.style.borderColor = 'rgba(110,231,183,0.6)'; }));
+    ['dragleave','drop'].forEach(n => urlDrop.addEventListener(n, (e) => { e.preventDefault(); urlDrop.style.borderColor = ''; }));
+    urlDrop.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if(dt.files && dt.files.length){
+        // If user drops a file, use object URL (works locally)
+        const file = dt.files[0];
+        const obj = URL.createObjectURL(file);
+        urlInput.value = obj;
+        showTemporaryMessage('Local file added as object URL — plays only on this device');
+      } else if(dt.types.includes('text/uri-list') || dt.types.includes('text/plain')){
+        const text = dt.getData('text/uri-list') || dt.getData('text/plain');
+        if(text) urlInput.value = text.trim();
+      }
+    });
+
+    // Helper: format time
+    function formatTime(s){
+      if(!isFinite(s) || isNaN(s)) return '0:00';
+      s = Math.floor(s);
+      const m = Math.floor(s/60);
+      const sec = s%60;
+      return m+':' + (sec<10 ? '0'+sec : sec);
+    }
+
+    // Tiny message overlay
+    let msgTimeout = null;
+    function showTemporaryMessage(msg, ms = 1600){
+      clearTimeout(msgTimeout);
+      const el = document.createElement('div');
+      el.style.position = 'fixed';
+      el.style.left = '50%';
+      el.style.transform = 'translateX(-50%)';
+      el.style.bottom = '24px';
+      el.style.padding = '10px 14px';
+      el.style.borderRadius = '8px';
+      el.style.background = 'rgba(2,6,23,0.9)';
+      el.style.color = 'white';
+      el.style.zIndex = 9999;
+      el.style.boxShadow = '0 8px 30px rgba(2,6,23,0.6)';
+      el.textContent = msg;
+      document.body.appendChild(el);
+      msgTimeout = setTimeout(() => {
+        el.remove();
+      }, ms);
+    }
+
+    // Small utility: escape HTML strings already included above
+
+    // Try to load first track on init
+    init();
+
+    // If audio fails to play due to CORS or unsupported format, warn user
+    audio.addEventListener('error', (e) => {
+      console.error('Audio error', e);
+      showTemporaryMessage('Audio failed to load — check URL, CORS or format (mp3/m4a/ogg).');
+    });
+
+    // Accessibility: allow focus on progress bar and seek via keyboard
+    progressBar.addEventListener('keydown', (e) => {
+      if(e.key === 'ArrowLeft') audio.currentTime = Math.max(0, audio.currentTime - 5);
+      if(e.key === 'ArrowRight') audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5);
+      if(e.key === 'Home') audio.currentTime = 0;
+      if(e.key === 'End') audio.currentTime = audio.duration || 0;
+    });
+
+    // small helper to extract host (already defined)
+  </script>
+</body>
+</html>
