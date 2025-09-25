@@ -12,12 +12,6 @@
   .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
   .hidden{display:none}
 
-  /* auth layout */
-  .auth-wrap{display:flex;gap:16px;margin-bottom:18px}
-  .auth-box{flex:1;padding:12px;background:rgba(255,255,255,0.02);border-radius:8px}
-  input{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;margin-top:8px}
-  button{cursor:pointer;padding:10px 12px;border-radius:8px;border:none;background:var(--accent);color:#022;font-weight:700;margin-top:10px}
-
   /* home */
   .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:12px}
   .song-card{background:linear-gradient(180deg,#142033,#0b1220);border-radius:10px;padding:14px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform .16s}
@@ -49,38 +43,6 @@
 <body>
   <div class="container">
 
-    <!-- Top: auth area -->
-    <div class="card">
-      <div class="top-row">
-        <div>
-          <strong>WavePlayer</strong> — demo with accounts
-        </div>
-        <div id="authArea">
-          <!-- populated by JS -->
-          <button id="logoutBtn" class="logout-btn hidden">Logout</button>
-        </div>
-      </div>
-
-      <div id="authForms" style="margin-top:12px;display:flex;gap:12px">
-        <div class="auth-box" id="loginBox">
-          <div style="font-weight:800">Login</div>
-          <input id="loginUsername" placeholder="username">
-          <input id="loginPassword" type="password" placeholder="password">
-          <button id="loginBtn">Login</button>
-          <div class="small" style="margin-top:8px">Or <a href="#" id="showSignup">create account</a></div>
-        </div>
-
-        <div class="auth-box hidden" id="signupBox">
-          <div style="font-weight:800">Sign up</div>
-          <input id="signupUsername" placeholder="username">
-          <input id="signupPassword" type="password" placeholder="password">
-          <button id="signupBtn">Create account</button>
-          <div class="small" style="margin-top:8px">Already have an account? <a href="#" id="showLogin">login</a></div>
-        </div>
-      </div>
-
-      <div id="statusMessage" class="message hidden"></div>
-    </div>
 
     <!-- Main content -->
     <div id="mainArea" style="margin-top:14px">
