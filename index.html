@@ -1,426 +1,190 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SuperMusic Beta</title>
-<style>
-  :root{--bg:#071229;--card:#0b1220;--accent:#6ee7b7;--muted:#9aa4b2}
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071229,#07192b);color:#e6eef6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-  .container{width:100%;max-width:980px}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 30px rgba(2,6,23,0.6)}
-  .hidden{display:none}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WavePlayer</title>
+  <style>
+    body{
+      margin:0;font-family:Inter,system-ui,sans-serif;background:#0f1724;color:#e6eef6;
+      display:flex;justify-content:center;align-items:center;min-height:100vh;padding:24px;
+    }
+    .hidden{display:none}
 
-  /* home */
-  .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:12px}
-  .song-card{background:linear-gradient(180deg,#142033,#0b1220);border-radius:10px;padding:14px;display:flex;flex-direction:column;align-items:center;cursor:pointer;transition:transform .16s}
-  .song-card:hover{transform:translateY(-4px)}
-  .song-art{width:140px;height:140px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:800;color:#022;font-size:36px}
-  .song-title{font-weight:700;margin-top:10px}
-  .song-artist{color:var(--muted);font-size:13px;margin-top:4px}
+    /* --- HOME SCREEN --- */
+    .home{
+      max-width:900px;width:100%;display:grid;gap:20px;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    }
+    .song-card{
+      background:linear-gradient(180deg,#142033,#0b1220);
+      border-radius:12px;padding:16px;cursor:pointer;
+      display:flex;flex-direction:column;align-items:center;transition:transform .2s;
+    }
+    .song-card:hover{transform:translateY(-4px)}
+    .song-art{
+      width:150px;height:150px;border-radius:10px;
+      background:linear-gradient(135deg,#6ee7b7,#60a5fa);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#022;
+      font-size:28px;margin-bottom:12px;
+    }
+    .song-title{font-size:16px;font-weight:700;margin:4px 0}
+    .song-artist{font-size:13px;color:#9aa4b2}
 
-  /* player (condensed) */
-  .player-wrap{display:grid;grid-template-columns:1fr 300px;gap:16px;margin-top:18px}
-  @media(max-width:880px){.player-wrap{grid-template-columns:1fr}}
-  .cover{display:flex;gap:12px;align-items:center;padding:12px;background:rgba(255,255,255,0.02);border-radius:10px}
-  .art{width:92px;height:92px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:700;color:#022;font-size:20px;flex:0 0 92px}
-  .title{font-weight:800;font-size:18px;margin:0}
-  .subtitle{color:var(--muted);font-size:13px;margin:6px 0}
-  .controls{display:flex;gap:8px;align-items:center;margin-top:8px}
-  .btn{background:var(--accent);border:none;color:#022;padding:8px 12px;border-radius:8px;font-weight:700}
-  .icon{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:#cfe7ff}
-  .progress{width:100%;height:10px;background:rgba(255,255,255,0.04);border-radius:99px;margin-top:12px;cursor:pointer}
-  .bar{height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:0%;border-radius:99px}
-  .time{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:6px}
-  .small{font-size:13px;color:var(--muted)}
-  .top-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-  .right-col{display:flex;flex-direction:column;gap:12px}
-  .logout-btn{background:transparent;border:1px solid rgba(255,255,255,0.06);color:#cfe7ff;padding:8px 10px;border-radius:8px}
-  .message{padding:8px;border-radius:8px;background:rgba(0,0,0,0.4);margin-top:10px}
-</style>
+    /* --- PLAYER SCREEN --- */
+    .player-wrap{
+      width:100%;max-width:920px;background:rgba(255,255,255,0.03);
+      border-radius:14px;padding:20px;box-shadow:0 8px 30px rgba(2,6,23,0.6);
+      border:1px solid rgba(255,255,255,0.03);display:grid;
+      grid-template-columns:1fr 320px;gap:18px;align-items:start;
+    }
+    @media(max-width:880px){.player-wrap{grid-template-columns:1fr}}
+    .cover{background:#142033;border-radius:10px;padding:14px;display:flex;gap:12px;align-items:center}
+    .art{width:92px;height:92px;border-radius:8px;background:linear-gradient(135deg,#6ee7b7,#60a5fa);
+      display:flex;align-items:center;justify-content:center;font-weight:700;color:#022;font-size:20px;flex:0 0 92px}
+    .title{font-size:18px;font-weight:700;margin:0 0 6px 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .subtitle{font-size:13px;color:#9aa4b2;margin:0 0 12px 0}
+    .controls{display:flex;gap:10px;align-items:center}
+    button{cursor:pointer}
+    .btn{background:rgba(255,255,255,0.05);border:none;color:#6ee7b7;padding:10px 14px;border-radius:10px;font-weight:600}
+    .icon{background:transparent;border:1px solid rgba(255,255,255,0.1);padding:8px;border-radius:8px;color:#cfe7ff}
+    .progress{width:100%;height:10px;background:rgba(255,255,255,0.04);border-radius:99px;position:relative;cursor:pointer}
+    .progress .bar{height:100%;background:linear-gradient(90deg,#6ee7b7,#60a5fa);width:0%;border-radius:99px}
+    .time{display:flex;justify-content:space-between;font-size:12px;color:#9aa4b2;margin-top:6px}
+    .playlist{margin-top:16px;background:rgba(255,255,255,0.018);padding:10px;border-radius:10px;max-height:240px;overflow:auto}
+  </style>
 </head>
 <body>
-  <div class="container">
 
-
-    <!-- Main content -->
-    <div id="mainArea" style="margin-top:14px">
-
-      <!-- HOME -->
-      <div id="homeCard" class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <div style="font-weight:800">Home</div>
-          <div class="small" id="welcomeText"></div>
-        </div>
-
-        <div class="home-grid" id="homeGrid" style="margin-top:12px">
-          <!-- 4 songs -->
-          <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" data-title="SoundHelix Song 1" data-artist="SoundHelix">
-            <div class="song-art">S1</div>
-            <div class="song-title">SoundHelix Song 1</div>
-            <div class="song-artist">SoundHelix</div>
-          </div>
-
-          <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" data-title="SoundHelix Song 2" data-artist="SoundHelix">
-            <div class="song-art">S2</div>
-            <div class="song-title">SoundHelix Song 2</div>
-            <div class="song-artist">SoundHelix</div>
-          </div>
-
-          <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" data-title="SoundHelix Song 3" data-artist="SoundHelix">
-            <div class="song-art">S3</div>
-            <div class="song-title">SoundHelix Song 3</div>
-            <div class="song-artist">SoundHelix</div>
-          </div>
-
-          <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" data-title="SoundHelix Song 4" data-artist="SoundHelix">
-            <div class="song-art">S4</div>
-            <div class="song-title">SoundHelix Song 4</div>
-            <div class="song-artist">SoundHelix</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- PLAYER -->
-      <div id="playerCard" class="card hidden" style="margin-top:14px">
-        <div class="player-wrap">
-          <div>
-            <div class="cover">
-              <div class="art" id="coverArt">WP</div>
-              <div style="flex:1;min-width:0">
-                <div class="title" id="trackTitle">Title</div>
-                <div class="subtitle" id="trackArtist">Artist</div>
-
-                <div class="controls" role="group" aria-label="player controls">
-                  <button class="icon" id="prevBtn">⏮</button>
-                  <button class="btn" id="playBtn">▶ Play</button>
-                  <button class="icon" id="nextBtn">⏭</button>
-                </div>
-
-                <div class="progress" id="progressBar" aria-label="seek bar" role="slider" tabindex="0">
-                  <div class="bar" id="progressFill"></div>
-                </div>
-                <div class="time"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
-              </div>
-            </div>
-
-            <div id="playlist" style="margin-top:12px"></div>
-          </div>
-
-          <div class="right-col">
-            <div class="card" style="padding:12px">
-              <div style="font-weight:700">Playback Options</div>
-              <div style="margin-top:8px">
-                <label class="small">Add audio URL</label>
-                <input id="urlInput" placeholder="https://example.com/track.mp3">
-                <div style="display:flex;gap:8px;margin-top:8px">
-                  <button id="addBtn" style="flex:1">Add</button>
-                  <button id="playNowBtn" style="flex:1">Play now</button>
-                </div>
-              </div>
-            </div>
-
-            <div class="card" style="padding:12px">
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <div style="font-weight:700">Account</div>
-                <div class="small" id="accountName"></div>
-              </div>
-              <div style="margin-top:8px">
-                <button id="savePlaylistBtn" style="width:100%;margin-top:10px">Save playlist (protected)</button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-        <audio id="audio" preload="metadata" crossorigin="anonymous"></audio>
-      </div>
-
+  <!-- HOME SCREEN -->
+  <section id="homeScreen" class="home">
+    <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" data-title="SoundHelix Song 1" data-artist="SoundHelix">
+      <div class="song-art">S1</div>
+      <div class="song-title">SoundHelix Song 1</div>
+      <div class="song-artist">SoundHelix</div>
     </div>
-  </div>
+    <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" data-title="SoundHelix Song 2" data-artist="SoundHelix">
+      <div class="song-art">S2</div>
+      <div class="song-title">SoundHelix Song 2</div>
+      <div class="song-artist">SoundHelix</div>
+    </div>
+    <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" data-title="SoundHelix Song 3" data-artist="SoundHelix">
+      <div class="song-art">S3</div>
+      <div class="song-title">SoundHelix Song 3</div>
+      <div class="song-artist">SoundHelix</div>
+    </div>
+    <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" data-title="SoundHelix Song 4" data-artist="SoundHelix">
+      <div class="song-art">S4</div>
+      <div class="song-title">SoundHelix Song 4</div>
+      <div class="song-artist">SoundHelix</div>
+    </div>
+  </section>
+
+  <!-- PLAYER SCREEN -->
+  <section id="playerScreen" class="player-wrap hidden">
+    <div class="left">
+      <div class="cover">
+        <div class="art" id="coverArt">WP</div>
+        <div class="meta">
+          <h1 class="title" id="trackTitle">Title</h1>
+          <p class="subtitle" id="trackArtist">Artist</p>
+          <div class="controls">
+            <button class="icon" id="prevBtn">⏮</button>
+            <button class="btn" id="playBtn">▶ Play</button>
+            <button class="icon" id="nextBtn">⏭</button>
+          </div>
+          <div class="progress" id="progressBar"><div class="bar" id="progressFill"></div></div>
+          <div class="time"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+        </div>
+      </div>
+      <div class="playlist" id="playlist"></div>
+    </div>
+    <audio id="audio" preload="metadata"></audio>
+  </section>
 
 <script>
-/* ---------- Client-side code: auth + home/player ---------- */
+  const homeScreen = document.getElementById('homeScreen');
+  const playerScreen = document.getElementById('playerScreen');
+  const audio = document.getElementById('audio');
+  const trackTitle = document.getElementById('trackTitle');
+  const trackArtist = document.getElementById('trackArtist');
+  const coverArt = document.getElementById('coverArt');
+  const playBtn = document.getElementById('playBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const progressBar = document.getElementById('progressBar');
+  const progressFill = document.getElementById('progressFill');
+  const currentTimeEl = document.getElementById('currentTime');
+  const durationEl = document.getElementById('duration');
+  const playlistEl = document.getElementById('playlist');
 
-const api = {
-  signup: (u,p) => fetch('/api/signup', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}).then(r=>r.json()),
-  login: (u,p) => fetch('/api/login', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})}).then(r=>r.json()),
-  logout: () => fetch('/api/logout', {method:'POST'}).then(r=>r.json()),
-  me: () => fetch('/api/me').then(r=>r.ok ? r.json() : Promise.reject(r)),
-  savePlaylist: (name,data) => fetch('/api/playlists', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,data})}).then(r=>r.json()),
-  getPlaylists: () => fetch('/api/playlists').then(r=>r.json())
-};
+  let playlist = [];
+  let currentIndex = 0;
 
-const loginBox = document.getElementById('loginBox');
-const signupBox = document.getElementById('signupBox');
-const showSignup = document.getElementById('showSignup');
-const showLogin = document.getElementById('showLogin');
-const loginBtn = document.getElementById('loginBtn');
-const signupBtn = document.getElementById('signupBtn');
-const logoutBtn = document.getElementById('logoutBtn');
-const statusMessage = document.getElementById('statusMessage');
-const welcomeText = document.getElementById('welcomeText');
-const authArea = document.getElementById('authArea');
-const accountName = document.getElementById('accountName');
-
-function showMessage(msg, time=2500){
-  statusMessage.textContent = msg;
-  statusMessage.classList.remove('hidden');
-  clearTimeout(showMessage._t);
-  showMessage._t = setTimeout(()=> statusMessage.classList.add('hidden'), time);
-}
-
-// toggle auth forms
-showSignup.addEventListener('click', (e)=>{ e.preventDefault(); loginBox.classList.add('hidden'); signupBox.classList.remove('hidden'); });
-showLogin.addEventListener('click', (e)=>{ e.preventDefault(); signupBox.classList.add('hidden'); loginBox.classList.remove('hidden'); });
-
-// Signup
-signupBtn.addEventListener('click', async ()=>{
-  const u = document.getElementById('signupUsername').value.trim();
-  const p = document.getElementById('signupPassword').value.trim();
-  if(!u||!p){ showMessage('fill fields'); return; }
-  try {
-    const res = await api.signup(u,p);
-    if(res.error){ showMessage('Error: '+res.error); return; }
-    showMessage('Account created — logged in ✔️');
-    afterAuth(res.username);
-  } catch (err) {
-    showMessage('Signup failed');
-    console.error(err);
-  }
-});
-
-// Login
-loginBtn.addEventListener('click', async ()=>{
-  const u = document.getElementById('loginUsername').value.trim();
-  const p = document.getElementById('loginPassword').value.trim();
-  if(!u||!p){ showMessage('fill fields'); return; }
-  try {
-    const res = await api.login(u,p);
-    if(res.error){ showMessage('Error: '+res.error); return; }
-    showMessage('Logged in ✔️');
-    afterAuth(res.username);
-  } catch (err) {
-    showMessage('Login failed'); console.error(err);
-  }
-});
-
-// Logout
-logoutBtn.addEventListener('click', async ()=>{
-  await api.logout();
-  showMessage('Logged out');
-  onLogout();
-});
-
-// try to get current user (if cookie exists)
-(async function tryAutoLogin(){
-  try {
-    const me = await api.me();
-    afterAuth(me.username);
-  } catch(e){
-    // not logged in
-  }
-})();
-
-function afterAuth(username){
-  // show/hide UI
-  loginBox.classList.add('hidden');
-  signupBox.classList.add('hidden');
-  logoutBtn.classList.remove('hidden');
-  welcomeText.textContent = 'Welcome, ' + username;
-  accountName.textContent = username;
-  authArea.appendChild(logoutBtn);
-}
-
-// on logout UI update
-function onLogout(){
-  logoutBtn.classList.add('hidden');
-  welcomeText.textContent = '';
-  accountName.textContent = '';
-  loginBox.classList.remove('hidden');
-  signupBox.classList.add('hidden');
-  // if you want, hide player/home to force login — but we keep home accessible
-}
-
-/* ---------- Home -> Player ---------- */
-const homeGrid = document.getElementById('homeGrid');
-const playerCard = document.getElementById('playerCard');
-const homeCard = document.getElementById('homeCard');
-
-const audio = document.getElementById('audio');
-const playBtn = document.getElementById('playBtn');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const progressBar = document.getElementById('progressBar');
-const progressFill = document.getElementById('progressFill');
-const currentTimeEl = document.getElementById('currentTime');
-const durationEl = document.getElementById('duration');
-const trackTitle = document.getElementById('trackTitle');
-const trackArtist = document.getElementById('trackArtist');
-const coverArt = document.getElementById('coverArt');
-const playlistEl = document.getElementById('playlist');
-
-const urlInput = document.getElementById('urlInput');
-const addBtn = document.getElementById('addBtn');
-const playNowBtn = document.getElementById('playNowBtn');
-const savePlaylistBtn = document.getElementById('savePlaylistBtn');
-
-let playlist = [];
-let currentIndex = 0;
-
-// clicking a song on home adds to playlist (either play that track or queue)
-homeGrid.querySelectorAll('.song-card').forEach((card, idx) => {
-  card.addEventListener('click', () => {
-    const s = { url: card.dataset.url, title: card.dataset.title, artist: card.dataset.artist };
-    // behavior: set playlist to all home songs, and start at clicked index
-    const cards = Array.from(homeGrid.querySelectorAll('.song-card'));
-    playlist = cards.map(c => ({ url: c.dataset.url, title: c.dataset.title, artist: c.dataset.artist }));
-    currentIndex = idx;
-    loadTrack(currentIndex);
-    homeCard.classList.add('hidden');
-    playerCard.classList.remove('hidden');
-    audio.play().catch(()=>{}); // may require user gesture
+  // Switch from home → player
+  document.querySelectorAll('.song-card').forEach(card=>{
+    card.addEventListener('click',()=>{
+      const songs = Array.from(document.querySelectorAll('.song-card')).map(c=>({
+        url:c.dataset.url,title:c.dataset.title,artist:c.dataset.artist
+      }));
+      playlist = songs;
+      currentIndex = Array.from(document.querySelectorAll('.song-card')).indexOf(card);
+      loadTrack(currentIndex);
+      homeScreen.classList.add('hidden');
+      playerScreen.classList.remove('hidden');
+      audio.play();
+    });
   });
-});
 
-function loadTrack(index){
-  if(index < 0 || index >= playlist.length) return;
-  currentIndex = index;
-  const t = playlist[index];
-  audio.src = t.url;
-  trackTitle.textContent = t.title || extractName(t.url);
-  trackArtist.textContent = t.artist || extractHost(t.url);
-  coverArt.textContent = (t.title||extractName(t.url)).slice(0,2).toUpperCase();
-  renderPlaylist();
-}
-
-function renderPlaylist(){
-  playlistEl.innerHTML = '';
-  playlist.forEach((t,i) => {
-    const div = document.createElement('div');
-    div.style.padding='8px';
-    div.style.borderBottom='1px solid rgba(255,255,255,0.02)';
-    div.style.display='flex';
-    div.style.justifyContent='space-between';
-    div.style.alignItems='center';
-    div.innerHTML = `<div style="min-width:0"><div style="font-weight:700">${escapeHtml(t.title)}</div><div class="small">${escapeHtml(t.artist)}</div></div>
-                     <div style="display:flex;gap:8px;align-items:center">
-                       <button class="icon" data-action="play" data-i="${i}" title="play">▶</button>
-                       <button class="icon" data-action="remove" data-i="${i}" title="remove">✖</button>
-                     </div>`;
-    if(i === currentIndex) div.style.background = 'linear-gradient(90deg, rgba(110,231,183,0.06), rgba(96,165,250,0.02))';
-    playlistEl.appendChild(div);
-  });
-}
-
-// buttons
-playBtn.addEventListener('click', () => { audio.paused ? audio.play() : audio.pause(); updatePlayBtn(); });
-prevBtn.addEventListener('click', () => {
-  if(audio.currentTime > 4) { audio.currentTime = 0; return; }
-  const prev = currentIndex - 1;
-  if(prev < 0) { audio.currentTime = 0; return; }
-  loadTrack(prev); audio.play();
-});
-nextBtn.addEventListener('click', () => {
-  const next = currentIndex + 1;
-  if(next >= playlist.length) { audio.pause(); return; }
-  loadTrack(next); audio.play();
-});
-
-audio.addEventListener('play', updatePlayBtn);
-audio.addEventListener('pause', updatePlayBtn);
-function updatePlayBtn(){ playBtn.textContent = audio.paused ? '▶ Play' : '⏸ Pause'; }
-
-audio.addEventListener('timeupdate', () => {
-  const pct = (audio.currentTime / (audio.duration || 1)) * 100;
-  progressFill.style.width = isFinite(pct) ? pct + '%' : '0%';
-  currentTimeEl.textContent = formatTime(audio.currentTime);
-  durationEl.textContent = isFinite(audio.duration) ? formatTime(audio.duration) : '0:00';
-});
-
-progressBar.addEventListener('click', (e) => {
-  const r = progressBar.getBoundingClientRect();
-  const pct = (e.clientX - r.left) / r.width;
-  audio.currentTime = pct * audio.duration;
-});
-
-playlistEl.addEventListener('click', (e) => {
-  const btn = e.target.closest('button');
-  if(!btn) return;
-  const action = btn.dataset.action;
-  const i = Number(btn.dataset.i);
-  if(action === 'play') {
-    loadTrack(i); audio.play();
-  } else if(action === 'remove') {
-    playlist.splice(i,1);
-    if(i === currentIndex) {
-      if(playlist.length === 0) {
-        audio.pause(); audio.src=''; playerCard.classList.add('hidden'); homeCard.classList.remove('hidden');
-      } else {
-        const newIndex = Math.min(i, playlist.length - 1);
-        loadTrack(newIndex); audio.play();
-      }
-    } else if(i < currentIndex) {
-      currentIndex--;
-    }
+  function loadTrack(index){
+    const t = playlist[index];
+    audio.src = t.url;
+    trackTitle.textContent = t.title;
+    trackArtist.textContent = t.artist;
+    coverArt.textContent = t.title.slice(0,2).toUpperCase();
     renderPlaylist();
   }
-});
 
-// Add url to playlist
-addBtn.addEventListener('click', () => {
-  const url = urlInput.value.trim();
-  if(!url) { showMessage('paste a url'); return; }
-  playlist.push({ url, title: extractName(url), artist: extractHost(url) });
-  renderPlaylist();
-  urlInput.value = '';
-});
-playNowBtn.addEventListener('click', () => {
-  const url = urlInput.value.trim();
-  if(!url) { showMessage('paste a url'); return; }
-  playlist.push({ url, title: extractName(url), artist: extractHost(url) });
-  loadTrack(playlist.length - 1);
-  audio.play().catch(()=>{});
-  urlInput.value = '';
-  homeCard.classList.add('hidden');
-  playerCard.classList.remove('hidden');
-});
-
-// Save playlist (protected)
-savePlaylistBtn.addEventListener('click', async () => {
-  if(playlist.length === 0) { showMessage('no tracks to save'); return; }
-  try {
-    const name = prompt('Playlist name', 'My Playlist') || 'My Playlist';
-    const res = await api.savePlaylist(name, playlist);
-    if(res && res.id) showMessage('Playlist saved ✔️');
-    else showMessage('Save failed');
-  } catch (err) {
-    showMessage('Save failed — login required');
-    console.error(err);
+  function renderPlaylist(){
+    playlistEl.innerHTML = '';
+    playlist.forEach((t,i)=>{
+      const div=document.createElement('div');
+      div.textContent = (i+1)+'. '+t.title+' — '+t.artist;
+      if(i===currentIndex) div.style.color='#6ee7b7';
+      playlistEl.appendChild(div);
+    });
   }
-});
 
-// Utilities
-function formatTime(s){ s = Math.floor(s) || 0; return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0'); }
-function extractName(url){ try { const u = new URL(url); const name = decodeURIComponent(u.pathname.split('/').filter(Boolean).pop()||u.hostname); return name.replace(/[-_+%20]/g,' '); } catch { return url; } }
-function extractHost(url){ try { return new URL(url).hostname } catch { return '' } }
-function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, (m) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) }
+  playBtn.addEventListener('click',()=>{ audio.paused?audio.play():audio.pause(); updatePlayBtn(); });
+  audio.addEventListener('play',updatePlayBtn);
+  audio.addEventListener('pause',updatePlayBtn);
+  function updatePlayBtn(){ playBtn.textContent=audio.paused?'▶ Play':'⏸ Pause'; }
 
-/* Keyboard shortcuts small */
-window.addEventListener('keydown', (e) => {
-  if(e.key === ' ' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); audio.paused ? audio.play() : audio.pause(); }
-  else if(e.key === 'ArrowRight') audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + 5);
-  else if(e.key === 'ArrowLeft') audio.currentTime = Math.max(0, audio.currentTime - 5);
-  else if(e.key === 'ArrowUp') audio.volume = Math.min(1, (audio.volume || 0) + 0.05);
-  else if(e.key === 'ArrowDown') audio.volume = Math.max(0, (audio.volume || 0) - 0.05);
-});
+  prevBtn.addEventListener('click',()=>{
+    currentIndex=(currentIndex-1+playlist.length)%playlist.length;
+    loadTrack(currentIndex); audio.play();
+  });
+  nextBtn.addEventListener('click',()=>{
+    currentIndex=(currentIndex+1)%playlist.length;
+    loadTrack(currentIndex); audio.play();
+  });
 
-/* Basic startup state */
-(function init(){
-  // show home by default, player hidden
-  homeCard.classList.remove('hidden');
-  playerCard.classList.add('hidden');
-})();
+  // Progress
+  audio.addEventListener('timeupdate',()=>{
+    progressFill.style.width=((audio.currentTime/audio.duration)*100||0)+'%';
+    currentTimeEl.textContent=formatTime(audio.currentTime);
+    durationEl.textContent=isFinite(audio.duration)?formatTime(audio.duration):'0:00';
+  });
+  progressBar.addEventListener('click',e=>{
+    const rect=progressBar.getBoundingClientRect();
+    const pct=(e.clientX-rect.left)/rect.width;
+    audio.currentTime=pct*audio.duration;
+  });
+
+  function formatTime(s){
+    s=Math.floor(s)||0; return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  }
 </script>
 </body>
 </html>
+
