@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SuperMusic - Player</title>
+  <style>
+    body{margin:0;font-family:sans-serif;background:#0f1724;color:#e6eef6;
+      display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+    .player{max-width:600px;width:100%;background:#142033;padding:20px;border-radius:12px;text-align:center}
+    .art{width:150px;height:150px;margin:0 auto 12px;background:linear-gradient(135deg,#6ee7b7,#60a5fa);
+      display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:28px;font-weight:bold;color:#022}
+    .title{font-size:20px;font-weight:700;margin:6px 0}
+    .artist{font-size:14px;color:#9aa4b2;margin-bottom:20px}
+    .controls{display:flex;justify-content:center;gap:10px;margin:12px 0}
+    .btn{background:#6ee7b7;color:#022;padding:10px 16px;border:none;border-radius:8px;font-weight:600;cursor:pointer}
+    .progress{height:8px;background:#334155;border-radius:99px;overflow:hidden;cursor:pointer}
+    .progress .bar{background:linear-gradient(90deg,#6ee7b7,#60a5fa);height:100%;width:0%}
+    .time{display:flex;justify-content:space-between;font-size:12px;color:#9aa4b2;margin-top:6px}
+    .back{display:block;margin-top:20px;color:#6ee7b7;text-decoration:none;font-weight:600}
+  </style>
+</head>
+<body>
+  <div class="player">
+    <div class="art" id="coverArt">??</div>
+    <div class="title" id="trackTitle"></div>
+    <div class="artist" id="trackArtist"></div>
+
+    <div class="controls">
+      <button class="btn" id="playBtn">▶ Play</button>
+    </div>
+
+    <div class="progress" id="progressBar"><div class="bar" id="progressFill"></div></div>
+    <div class="time"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
+
+    <a href="index.html" class="back">⬅ Back to Home</a>
+  </div>
+
+  <audio id="audio" preload="metadata"></audio>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const url = params.get("url");
+  const title = params.get("title");
+  const artist = params.get("artist");
+
+  const audio=document.getElementById('audio');
+  const playBtn=document.getElementById('playBtn');
+  const progressBar=document.getElementById('progressBar');
+  const progressFill=document.getElementById('progressFill');
+  const currentTimeEl=document.getElementById('currentTime');
+  const durationEl=document.getElementById('duration');
+
+  document.getElementById('trackTitle').textContent=title;
+  document.getElementById('trackArtist').textContent=artist;
+  document.getElementById('coverArt').textContent=title?title.slice(0,2).toUpperCase():"??";
+  audio.src=url;
+
+  playBtn.addEventListener('click',()=>{audio.paused?audio.play():audio.pause();});
+  audio.addEventListener('play',()=>playBtn.textContent="⏸ Pause");
+  audio.addEventListener('pause',()=>playBtn.textContent="▶ Play");
+
+  audio.addEventListener('timeupdate',()=>{
+    progressFill.style.width=((audio.currentTime/audio.duration)*100||0)+"%";
+    currentTimeEl.textContent=formatTime(audio.currentTime);
+    durationEl.textContent=isFinite(audio.duration)?formatTime(audio.duration):"0:00";
+  });
+
+  progressBar.addEventListener('click',e=>{
+    const rect=progressBar.getBoundingClientRect();
+    const pct=(e.clientX-rect.left)/rect.width;
+    audio.currentTime=pct*audio.duration;
+  });
+
+  function formatTime(s){
+    s=Math.floor(s)||0; return Math.floor(s/60)+":"+String(s%60).padStart(2,'0');
+  }
+</script>
+</body>
+</html>
