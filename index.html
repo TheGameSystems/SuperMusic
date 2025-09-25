@@ -13,9 +13,20 @@
       display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:28px;font-weight:bold;color:#022}
     .song-title{font-weight:bold;margin:6px 0}
     .song-artist{font-size:13px;color:#9aa4b2}
+    .search-bar{display:flex;align-items:center;background:#142033;border-radius:12px;padding:8px 12px;margin-bottom:24px;width:100%;max-width:600px}
+    .search-bar input{flex:1;background:transparent;border:none;color:#fff;font-size:14px;outline:none}
+    .search-bar button{background:#6ee7b7;color:#022;border:none;padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;margin-left:8px}
+    
   </style>
 </head>
 <body>
+  <!-- Upload/Search Bar -->
+  <div class="search-bar">
+    <input type="text" id="urlInput" placeholder="Paste a YouTube URL or leave empty to upload MP3...">
+    <input type="file" id="fileInput" accept="audio/mp3" hidden>
+    <button onclick="handleUpload()">Upload MP3</button>
+    <button onclick="handleYoutube()">Play URL</button>
+  </div>
   <section class="home">
     <div class="song-card" onclick="openPlayer('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3','SoundHelix Song 1','SoundHelix')">
       <div class="song-art">S1</div>
