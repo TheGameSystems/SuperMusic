@@ -1,59 +1,134 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>SuperMusic Home</title>
-  <style>
-    body{margin:0;font-family:sans-serif;background:#0f1724;color:#fff;
-      display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
-    .home{display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));max-width:900px;width:100%}
-    .song-card{background:#142033;padding:16px;border-radius:12px;text-align:center;cursor:pointer;transition:transform .2s}
-    .song-card:hover{transform:translateY(-4px)}
-    .song-art{width:150px;height:150px;margin:0 auto 12px;background:linear-gradient(135deg,#6ee7b7,#60a5fa);
-      display:flex;align-items:center;justify-content:center;border-radius:10px;font-size:28px;font-weight:bold;color:#022}
-    .song-title{font-weight:bold;margin:6px 0}
-    .song-artist{font-size:13px;color:#9aa4b2}
-    .search-bar{display:flex;align-items:center;background:#142033;border-radius:12px;padding:8px 12px;margin-bottom:24px;width:100%;max-width:600px}
-    .search-bar input{flex:1;background:transparent;border:none;color:#fff;font-size:14px;outline:none}
-    .search-bar button{background:#6ee7b7;color:#022;border:none;padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;margin-left:8px}
-    
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Music Home — Upload or YouTube</title>
+<style>
+  :root{--bg:#071229;--card:#142033;--accent:#6ee7b7;--muted:#9aa4b2}
+  body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#07192b);color:#e6eef6;min-height:100vh;display:flex;justify-content:center;padding:28px}
+  .wrap{width:100%;max-width:980px}
+  .search-bar{display:flex;gap:8px;align-items:center;background:var(--card);padding:12px;border-radius:12px;margin-bottom:18px}
+  .search-bar input[type="text"]{flex:1;background:transparent;border:none;color:inherit;padding:8px 10px;font-size:15px;outline:none}
+  .btn{background:var(--accent);border:none;padding:8px 12px;border-radius:8px;color:#022;font-weight:700;cursor:pointer}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:#dbeeff}
+  .note{font-size:13px;color:var(--muted);margin-top:8px}
+  .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  .song-card{background:linear-gradient(180deg,#142033,#0b1220);padding:14px;border-radius:10px;text-align:center;cursor:pointer;transition:transform .14s}
+  .song-card:hover{transform:translateY(-4px)}
+  .song-art{width:140px;height:140px;border-radius:10px;margin:0 auto 10px;background:linear-gradient(135deg,var(--accent),#60a5fa);display:flex;align-items:center;justify-content:center;font-weight:800;color:#022;font-size:34px}
+  .song-title{font-weight:800}
+  .song-artist{color:var(--muted);font-size:13px;margin-top:6px}
+</style>
 </head>
 <body>
-  <!-- Upload/Search Bar -->
-  <div class="search-bar">
-    <input type="text" id="urlInput" placeholder="Paste a YouTube URL or leave empty to upload MP3...">
-    <input type="file" id="fileInput" accept="audio/mp3" hidden>
-    <button onclick="handleUpload()">Upload MP3</button>
-    <button onclick="handleYoutube()">Play URL</button>
+  <div class="wrap">
+    <div class="search-bar" role="search" aria-label="Upload or YouTube">
+      <input id="urlInput" type="text" placeholder="Paste a YouTube link (or leave empty and click Upload MP3)...">
+      <input id="fileInput" type="file" accept="audio/*" style="display:none">
+      <button id="uploadBtn" class="btn">Upload MP3</button>
+      <button id="playUrlBtn" class="btn ghost">Play YouTube</button>
+    </div>
+    <div class="note">Tip: local MP3s are read into memory (sessionStorage) so they can be played on the separate player page. Large files may exceed browser limits — for larger files use a local server upload.</div>
+
+    <section class="home-grid" style="margin-top:16px">
+      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" data-title="SoundHelix Song 1" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
+        <div class="song-art">S1</div>
+        <div class="song-title">SoundHelix Song 1</div>
+        <div class="song-artist">SoundHelix</div>
+      </div>
+
+      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" data-title="SoundHelix Song 2" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
+        <div class="song-art">S2</div>
+        <div class="song-title">SoundHelix Song 2</div>
+        <div class="song-artist">SoundHelix</div>
+      </div>
+
+      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" data-title="SoundHelix Song 3" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
+        <div class="song-art">S3</div>
+        <div class="song-title">SoundHelix Song 3</div>
+        <div class="song-artist">SoundHelix</div>
+      </div>
+
+      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" data-title="SoundHelix Song 4" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
+        <div class="song-art">S4</div>
+        <div class="song-title">SoundHelix Song 4</div>
+        <div class="song-artist">SoundHelix</div>
+      </div>
+    </section>
   </div>
-  <section class="home">
-    <div class="song-card" onclick="openPlayer('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3','SoundHelix Song 1','SoundHelix')">
-      <div class="song-art">S1</div>
-      <div class="song-title">song_test_1</div>
-      <div class="song-artist">SoundHelix</div>
-    </div>
-    <div class="song-card" onclick="openPlayer('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3','SoundHelix Song 2','SoundHelix')">
-      <div class="song-art">S2</div>
-      <div class="song-title">song_test_2</div>
-      <div class="song-artist">SoundHelix</div>
-    </div>
-    <div class="song-card" onclick="openPlayer('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3','SoundHelix Song 3','SoundHelix')">
-      <div class="song-art">S3</div>
-      <div class="song-title">song_test_3</div>
-      <div class="song-artist">SoundHelix</div>
-    </div>
-    <div class="song-card" onclick="openPlayer('https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3','SoundHelix Song 4','SoundHelix')">
-      <div class="song-art">S4</div>
-      <div class="song-title">song_test_4</div>
-      <div class="song-artist">SoundHelix</div>
-    </div>
-  </section>
 
 <script>
-  function openPlayer(url,title,artist){
-    const query = new URLSearchParams({url,title,artist});
-    window.location.href = "player.html?" + query.toString();
+  // ----- helpers -----
+  function openPlayer(queryObj){
+    const qs = new URLSearchParams(queryObj).toString();
+    window.location.href = 'player.html?' + qs;
+  }
+
+  // When clicking a prebuilt card: pass remote mp3 URL
+  function openPlayerFromCard(el){
+    const url = el.dataset.url;
+    const title = el.dataset.title || 'Track';
+    const artist = el.dataset.artist || '';
+    openPlayer({ type: 'mp3', url: url, title: title, artist: artist });
+  }
+
+  // Upload local MP3 (read as data URL, store in sessionStorage, then navigate)
+  const fileInput = document.getElementById('fileInput');
+  document.getElementById('uploadBtn').addEventListener('click', ()=> fileInput.click());
+  fileInput.addEventListener('change', async (evt) => {
+    const file = evt.target.files && evt.target.files[0];
+    if(!file){ return; }
+    // small guard
+    if(file.size > 10 * 1024 * 1024){ // 10MB
+      if(!confirm('File is larger than 10 MB — storing in sessionStorage may fail. Continue?')) return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      try {
+        const payload = { dataUrl: ev.target.result, name: file.name, type: file.type };
+        sessionStorage.setItem('uploadedAudio', JSON.stringify(payload));
+        // navigate to player page — instruct player to load from session
+        openPlayer({ type: 'mp3', source: 'session', title: file.name, artist: 'Local File' });
+      } catch (err) {
+        alert('Failed to store file in sessionStorage: ' + err.message);
+      }
+    };
+    reader.onerror = function(){
+      alert('Failed to read file');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Play YouTube link
+  document.getElementById('playUrlBtn').addEventListener('click', () => {
+    const raw = document.getElementById('urlInput').value.trim();
+    if(!raw) { alert('Paste a YouTube URL first'); return; }
+    const id = extractYouTubeId(raw);
+    if(!id){ alert('Could not extract a YouTube video id from that URL'); return; }
+    openPlayer({ type: 'youtube', videoId: id, title: 'YouTube Video', artist: '' });
+  });
+
+  // Robust extractor for many YouTube URL flavors
+  function extractYouTubeId(url){
+    if(!url) return null;
+    url = url.trim();
+    // handle direct id
+    if(/^[A-Za-z0-9_-]{11}$/.test(url)) return url;
+    // patterns
+    const patterns = [
+      /(?:youtube\.com.*(?:\?|&)v=)([A-Za-z0-9_-]{11})/, // youtube.com/watch?v=...
+      /(?:youtu\.be\/)([A-Za-z0-9_-]{11})/,              // youtu.be/ID
+      /(?:youtube\.com\/embed\/)([A-Za-z0-9_-]{11})/,    // youtube.com/embed/ID
+      /(?:youtube\.com\/v\/)([A-Za-z0-9_-]{11})/         // youtube.com/v/ID
+    ];
+    for(const re of patterns){
+      const m = url.match(re);
+      if(m && m[1]) return m[1];
+    }
+    // fallback: any 11-char token
+    const fallback = url.match(/([A-Za-z0-9_-]{11})/);
+    return fallback ? fallback[1] : null;
   }
 </script>
 </body>
