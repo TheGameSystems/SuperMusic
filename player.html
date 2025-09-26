@@ -15,16 +15,17 @@
   .artist{color:var(--muted);margin-top:6px;font-size:13px}
   .controls{display:flex;gap:10px;margin-top:12px}
   .btn{background:var(--accent);border:none;color:#022;padding:8px 12px;border-radius:8px;cursor:pointer;font-weight:700}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.1);color:#dbeeff}
   .progress{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden;margin-top:12px;cursor:pointer}
   .bar{height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:0%}
   .time{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:6px}
   .back{display:inline-block;margin-top:12px;color:var(--accent);text-decoration:none;font-weight:700}
-  #youtubeContainer iframe{width:100%;height:420px;border:0;border-radius:8px;margin-top:16px}
+  #youtubeContainer{margin-top:16px}
   .message{color:#ffcccb;margin-top:10px}
 </style>
 </head>
 <body>
-  <div class="player" role="main" aria-live="polite">
+  <div class="player">
     <div class="top">
       <div class="art" id="coverArt">??</div>
       <div class="meta">
@@ -35,20 +36,27 @@
         <div id="mp3Controls" style="margin-top:8px">
           <div class="controls">
             <button class="btn" id="playBtn">▶ Play</button>
-            <button class="btn" id="stopBtn" style="background:transparent;color:#dbeeff;border:1px solid rgba(255,255,255,0.04)">Stop</button>
+            <button class="btn ghost" id="stopBtn">Stop</button>
           </div>
-          <div class="progress" id="progressBar" aria-label="seek bar" role="slider" tabindex="0">
+          <div class="progress" id="progressBar">
             <div class="bar" id="progressFill"></div>
           </div>
           <div class="time"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
         </div>
 
-        <!-- youtube placeholder (hidden until used) -->
-        <div id="youtubeContainer" class="hidden"></div>
+        <!-- youtube player with custom controls -->
+        <div id="youtubeContainer" class="hidden">
+          <div id="youtubePlayer"></div>
+          <div class="controls">
+            <button class="btn" id="ytPlayPause">▶ Play</button>
+            <button class="btn ghost" id="ytRewind">⏪ 10s</button>
+            <button class="btn ghost" id="ytForward">⏩ 10s</button>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="message" class="message" role="status" aria-live="polite"></div>
+    <div id="message" class="message"></div>
 
     <a class="back" href="index.html">⬅ Back to Home</a>
   </div>
@@ -56,12 +64,11 @@
   <audio id="audio" preload="metadata"></audio>
 
 <script>
-  // parse query
   const params = new URLSearchParams(window.location.search);
-  const type = params.get('type');       // 'mp3' or 'youtube'
-  const url = params.get('url');         // mp3 remote URL (encoded)
-  const videoId = params.get('videoId'); // youtube ID (if present)
-  const source = params.get('source');   // 'session' when upload used
+  const type = params.get('type');       
+  const url = params.get('url');         
+  const videoId = params.get('videoId'); 
+  const source = params.get('source');   
   const titleParam = params.get('title') || '';
   const artistParam = params.get('artist') || '';
 
@@ -89,59 +96,35 @@
     messageEl.style.color = isError ? '#ff8b8b' : '#9aa4b2';
   }
 
-  // ---------- MP3 flow ----------
+  // ---- MP3 Flow ----
   if(type === 'mp3'){
-    // try session source first
     if(source === 'session'){
-      // uploaded file was saved into sessionStorage as JSON { dataUrl, name, type }
       const raw = sessionStorage.getItem('uploadedAudio');
-      if(!raw){
-        showMessage('Uploaded file not found in session storage. Try re-uploading (or use the same tab).', true);
-        disableMp3Controls();
-      } else {
-        try {
-          const obj = JSON.parse(raw);
-          if(!obj.dataUrl) throw new Error('invalid data');
-          audio.src = obj.dataUrl;
-          initMp3Controls();
-          showMessage('Playing uploaded file from sessionStorage (temporary).');
-        } catch (err){
-          console.error(err);
-          showMessage('Failed to load uploaded file: ' + err.message, true);
-          disableMp3Controls();
-        }
-      }
-    }
-    // else remote url
-    else if(url){
-      try {
-        audio.src = decodeURIComponent(url);
+      if(raw){
+        const obj = JSON.parse(raw);
+        audio.src = obj.dataUrl;
         initMp3Controls();
-        showMessage('Loaded remote MP3.');
-      } catch (err){
-        console.error(err);
-        showMessage('Invalid MP3 URL', true);
-        disableMp3Controls();
+      } else {
+        showMessage('No uploaded file found.', true);
       }
+    } else if(url){
+      audio.src = decodeURIComponent(url);
+      initMp3Controls();
     } else {
-      showMessage('No MP3 source provided', true);
-      disableMp3Controls();
+      showMessage('No MP3 source.', true);
     }
   }
 
- <script>
-  // (existing code up top ...)
-
-  // --- YouTube flow with custom controls ---
+  // ---- YouTube Flow ----
   else if(type === 'youtube'){
     mp3Controls.style.display = 'none';
     youtubeContainer.classList.remove('hidden');
 
-    const id = videoId || params.get('url'); 
+    const id = videoId || params.get('url');
     if(!id){
-      showMessage('No YouTube video ID provided', true);
+      showMessage('No YouTube ID provided', true);
     } else {
-      // Load IFrame Player API
+      // Load YouTube API
       const tag = document.createElement('script');
       tag.src = "https://www.youtube.com/iframe_api";
       document.body.appendChild(tag);
@@ -152,100 +135,62 @@
           height: '360',
           width: '640',
           videoId: id,
-          playerVars: {
-            controls: 0, // hide YouTube controls
-            modestbranding: 1,
-            rel: 0
-          },
+          playerVars: { controls: 0, modestbranding: 1, rel: 0 },
           events: {
-            onReady: () => showMessage('YouTube video loaded. Use custom controls below.')
+            onReady: () => showMessage('YouTube video loaded. Use the custom buttons below.')
           }
         });
-      };
 
-      // wire up custom controls
-      document.getElementById('ytPlayPause').addEventListener('click', () => {
-        if(!ytPlayer) return;
-        const state = ytPlayer.getPlayerState();
-        if(state === YT.PlayerState.PLAYING){
-          ytPlayer.pauseVideo();
-          document.getElementById('ytPlayPause').textContent = '▶ Play';
-        } else {
-          ytPlayer.playVideo();
-          document.getElementById('ytPlayPause').textContent = '⏸ Pause';
-        }
-      });
+        // Controls
+        const playPauseBtn = document.getElementById('ytPlayPause');
+        playPauseBtn.addEventListener('click', () => {
+          const state = ytPlayer.getPlayerState();
+          if(state === YT.PlayerState.PLAYING){
+            ytPlayer.pauseVideo();
+            playPauseBtn.textContent = '▶ Play';
+          } else {
+            ytPlayer.playVideo();
+            playPauseBtn.textContent = '⏸ Pause';
+          }
+        });
 
-      document.getElementById('ytRewind').addEventListener('click', () => {
-        if(ytPlayer){
+        document.getElementById('ytRewind').addEventListener('click', () => {
           ytPlayer.seekTo(Math.max(0, ytPlayer.getCurrentTime() - 10), true);
-        }
-      });
+        });
 
-      document.getElementById('ytForward').addEventListener('click', () => {
-        if(ytPlayer){
+        document.getElementById('ytForward').addEventListener('click', () => {
           ytPlayer.seekTo(ytPlayer.getCurrentTime() + 10, true);
-        }
-      });
+        });
+      };
     }
   }
 
-
-  // ---------- MP3 helper functions ----------
+  // ---- MP3 helpers ----
   function initMp3Controls(){
-    mp3Controls.style.display = '';
-    playBtn.disabled = false;
-    stopBtn.disabled = false;
-    updatePlayButton();
-    audio.addEventListener('play', updatePlayButton);
-    audio.addEventListener('pause', updatePlayButton);
-    audio.addEventListener('timeupdate', onTimeUpdate);
-    audio.addEventListener('loadedmetadata', () => {
-      durationEl.textContent = isFinite(audio.duration) ? formatTime(audio.duration) : '0:00';
-    });
     playBtn.addEventListener('click', ()=> audio.paused ? audio.play() : audio.pause());
     stopBtn.addEventListener('click', ()=> { audio.pause(); audio.currentTime = 0; });
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('loadedmetadata', ()=> durationEl.textContent = formatTime(audio.duration));
+    audio.addEventListener('play', ()=> playBtn.textContent = '⏸ Pause');
+    audio.addEventListener('pause', ()=> playBtn.textContent = '▶ Play');
     progressBar.addEventListener('click', (e)=> {
       const r = progressBar.getBoundingClientRect();
       const pct = (e.clientX - r.left) / r.width;
-      audio.currentTime = pct * (audio.duration || 0);
+      audio.currentTime = pct * audio.duration;
     });
   }
 
-  function disableMp3Controls(){
-    mp3Controls.style.display = 'none';
-    playBtn.disabled = true;
-    stopBtn.disabled = true;
-  }
-
-  function updatePlayButton(){
-    playBtn.textContent = audio.paused ? '▶ Play' : '⏸ Pause';
-  }
-
   function onTimeUpdate(){
-    const pct = (audio.currentTime / (audio.duration || 1)) * 100;
-    progressFill.style.width = isFinite(pct) ? pct + '%' : '0%';
-    currentTimeEl.textContent = formatTime(audio.currentTime || 0);
-    durationEl.textContent = isFinite(audio.duration) ? formatTime(audio.duration) : '0:00';
+    const pct = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = pct + '%';
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+    durationEl.textContent = formatTime(audio.duration);
   }
 
   function formatTime(s){
-    s = Math.floor(s) || 0;
-    return Math.floor(s/60) + ':' + String(s%60).padStart(2,'0');
+    s = Math.floor(s)||0;
+    return Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
   }
-
-  // accessibility: keyboard seeking
-  progressBar.addEventListener('keydown', (e) => {
-    if(!audio.duration) return;
-    if(e.key === 'ArrowLeft') audio.currentTime = Math.max(0, audio.currentTime - 5);
-    if(e.key === 'ArrowRight') audio.currentTime = Math.min(audio.duration, audio.currentTime + 5);
-  });
-
-  // --------------- notes for developer / troubleshooting ---------------
-  // If you test by opening files directly (file://...), some browsers restrict iframe/embed behavior.
-  // Recommended: serve files via a local static server, e.g.:
-  //   python3 -m http.server 8000
-  // then open http://localhost:8000/index.html
 </script>
 </body>
 </html>
