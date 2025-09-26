@@ -108,24 +108,26 @@
     messageEl.style.color = isError ? '#ff8b8b' : '#9aa4b2';
   }
 
-  // ---- MP3 Flow ----
-  if(type === 'mp3'){
-    if(source === 'session'){
-      const raw = sessionStorage.getItem('uploadedAudio');
-      if(raw){
-        const obj = JSON.parse(raw);
-        audio.src = obj.dataUrl;
-        initMp3Controls();
-      } else {
-        showMessage('No uploaded file found.', true);
-      }
-    } else if(url){
-      audio.src = decodeURIComponent(url);
+ // ---- MP3 Flow ----
+if(type === 'mp3'){
+  youtubeContainer.style.display = 'none'; // hide YouTube section
+  if(source === 'session'){
+    const raw = sessionStorage.getItem('uploadedAudio');
+    if(raw){
+      const obj = JSON.parse(raw);
+      audio.src = obj.dataUrl;
       initMp3Controls();
     } else {
-      showMessage('No MP3 source.', true);
+      showMessage('No uploaded file found.', true);
     }
+  } else if(url){
+    audio.src = decodeURIComponent(url);
+    initMp3Controls();
+  } else {
+    showMessage('No MP3 source.', true);
   }
+}
+
 
   // ---- YouTube Flow (audio only with progress bar) ----
   else if(type === 'youtube'){
