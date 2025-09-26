@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Music Home — Upload or YouTube</title>
+<title>SuperMusic - Home</title>
 <style>
   :root{--bg:#071229;--card:#142033;--accent:#6ee7b7;--muted:#9aa4b2}
   body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#07192b);color:#e6eef6;min-height:100vh;display:flex;justify-content:center;padding:28px}
@@ -29,32 +29,16 @@
       <button id="uploadBtn" class="btn">Upload MP3</button>
       <button id="playUrlBtn" class="btn ghost">Play YouTube</button>
     </div>
-    <div class="note">Tip: local MP3s are read into memory (sessionStorage) so they can be played on the separate player page. Large files may exceed browser limits — for larger files use a local server upload.</div>
+    <div class="note">Tip: local MP3s are stored in session storage so they can be played on the separate player page. Large files may exceed browser limits — for larger files use a local server upload.</div>
 
     <section class="home-grid" style="margin-top:16px">
-      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" data-title="SoundHelix Song 1" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
+      <div class="song-card" data-url="https://thegamesystems.github.io/SuperMusic/MP3/MortalsFunkRemix.mp3" data-title="Mortals Funk Remix" data-artist="NCS" onclick="openPlayerFromCard(this)">
         <div class="song-art">S1</div>
         <div class="song-title">SoundHelix Song 1</div>
         <div class="song-artist">SoundHelix</div>
       </div>
 
-      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" data-title="SoundHelix Song 2" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
-        <div class="song-art">S2</div>
-        <div class="song-title">SoundHelix Song 2</div>
-        <div class="song-artist">SoundHelix</div>
-      </div>
 
-      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" data-title="SoundHelix Song 3" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
-        <div class="song-art">S3</div>
-        <div class="song-title">SoundHelix Song 3</div>
-        <div class="song-artist">SoundHelix</div>
-      </div>
-
-      <div class="song-card" data-url="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" data-title="SoundHelix Song 4" data-artist="SoundHelix" onclick="openPlayerFromCard(this)">
-        <div class="song-art">S4</div>
-        <div class="song-title">SoundHelix Song 4</div>
-        <div class="song-artist">SoundHelix</div>
-      </div>
     </section>
   </div>
 
