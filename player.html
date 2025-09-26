@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>SuperMusic - Player</title>
+<title>SuperMusic — Player</title>
 <style>
   :root{--bg:#071229;--card:#142033;--accent:#6ee7b7;--muted:#9aa4b2}
   body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#07192b);color:#e6eef6;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
@@ -20,8 +20,9 @@
   .bar{height:100%;background:linear-gradient(90deg,var(--accent),#60a5fa);width:0%}
   .time{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-top:6px}
   .back{display:inline-block;margin-top:12px;color:var(--accent);text-decoration:none;font-weight:700}
-  #youtubeContainer{margin-top:16px}
   .message{color:#ffcccb;margin-top:10px}
+  /* hide YouTube iframe (still plays audio) */
+  #youtubePlayer{width:0;height:0;opacity:0;pointer-events:none}
 </style>
 </head>
 <body>
@@ -44,7 +45,7 @@
           <div class="time"><span id="currentTime">0:00</span><span id="duration">0:00</span></div>
         </div>
 
-        <!-- youtube player with custom controls -->
+        <!-- youtube "audio only" controls -->
         <div id="youtubeContainer" class="hidden">
           <div id="youtubePlayer"></div>
           <div class="controls">
@@ -79,8 +80,8 @@
   const youtubeContainer = document.getElementById('youtubeContainer');
   const messageEl = document.getElementById('message');
 
-  titleEl.textContent = decodeURIComponent(titleParam || '') || 'Untitled';
-  artistEl.textContent = decodeURIComponent(artistParam || '') || '';
+  titleEl.textContent = decodeURIComponent(titleParam) || 'Untitled';
+  artistEl.textContent = decodeURIComponent(artistParam) || '';
   coverEl.textContent = (titleEl.textContent || '??').slice(0,2).toUpperCase();
 
   const audio = document.getElementById('audio');
@@ -115,7 +116,7 @@
     }
   }
 
-  // ---- YouTube Flow ----
+  // ---- YouTube Flow (audio only) ----
   else if(type === 'youtube'){
     mp3Controls.style.display = 'none';
     youtubeContainer.classList.remove('hidden');
@@ -132,16 +133,13 @@
       let ytPlayer;
       window.onYouTubeIframeAPIReady = function(){
         ytPlayer = new YT.Player('youtubePlayer', {
-          height: '360',
-          width: '640',
           videoId: id,
           playerVars: { controls: 0, modestbranding: 1, rel: 0 },
           events: {
-            onReady: () => showMessage('YouTube video loaded. Use the custom buttons below.')
+            onReady: () => showMessage('YouTube audio loaded. Use the custom buttons.')
           }
         });
 
-        // Controls
         const playPauseBtn = document.getElementById('ytPlayPause');
         playPauseBtn.addEventListener('click', () => {
           const state = ytPlayer.getPlayerState();
@@ -194,3 +192,4 @@
 </script>
 </body>
 </html>
+
