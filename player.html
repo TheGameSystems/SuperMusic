@@ -53,6 +53,10 @@
             <button class="btn ghost" id="ytRewind">⏪ 10s</button>
             <button class="btn ghost" id="ytForward">⏩ 10s</button>
           </div>
+          <div class="progress" id="ytProgressBar">
+            <div class="bar" id="ytProgressFill"></div>
+          </div>
+          <div class="time"><span id="ytCurrentTime">0:00</span><span id="ytDuration">0:00</span></div>
         </div>
       </div>
     </div>
@@ -84,6 +88,7 @@
   artistEl.textContent = decodeURIComponent(artistParam) || '';
   coverEl.textContent = (titleEl.textContent || '??').slice(0,2).toUpperCase();
 
+  // MP3 elements
   const audio = document.getElementById('audio');
   const playBtn = document.getElementById('playBtn');
   const stopBtn = document.getElementById('stopBtn');
@@ -91,6 +96,12 @@
   const progressFill = document.getElementById('progressFill');
   const currentTimeEl = document.getElementById('currentTime');
   const durationEl = document.getElementById('duration');
+
+  // YouTube elements
+  const ytProgressBar = document.getElementById('ytProgressBar');
+  const ytProgressFill = document.getElementById('ytProgressFill');
+  const ytCurrentTimeEl = document.getElementById('ytCurrentTime');
+  const ytDurationEl = document.getElementById('ytDuration');
 
   function showMessage(txt, isError=false){
     messageEl.textContent = txt || '';
@@ -116,7 +127,7 @@
     }
   }
 
-  // ---- YouTube Flow (audio only) ----
+  // ---- YouTube Flow (audio only with progress bar) ----
   else if(type === 'youtube'){
     mp3Controls.style.display = 'none';
     youtubeContainer.classList.remove('hidden');
@@ -130,13 +141,27 @@
       tag.src = "https://www.youtube.com/iframe_api";
       document.body.appendChild(tag);
 
-      let ytPlayer;
+      let ytPlayer, ytInterval;
       window.onYouTubeIframeAPIReady = function(){
         ytPlayer = new YT.Player('youtubePlayer', {
           videoId: id,
           playerVars: { controls: 0, modestbranding: 1, rel: 0 },
           events: {
-            onReady: () => showMessage('YouTube audio loaded. Use the custom buttons.')
+            onReady: () => {
+              showMessage('YouTube audio loaded. Use the custom buttons.');
+              ytDurationEl.textContent = formatTime(ytPlayer.getDuration());
+
+              // update progress bar every second
+              ytInterval = setInterval(()=>{
+                if(ytPlayer && ytPlayer.getCurrentTime){
+                  const cur = ytPlayer.getCurrentTime();
+                  const dur = ytPlayer.getDuration();
+                  ytCurrentTimeEl.textContent = formatTime(cur);
+                  ytDurationEl.textContent = formatTime(dur);
+                  ytProgressFill.style.width = (cur/dur*100)+'%';
+                }
+              }, 1000);
+            }
           }
         });
 
@@ -158,6 +183,12 @@
 
         document.getElementById('ytForward').addEventListener('click', () => {
           ytPlayer.seekTo(ytPlayer.getCurrentTime() + 10, true);
+        });
+
+        ytProgressBar.addEventListener('click', (e) => {
+          const rect = ytProgressBar.getBoundingClientRect();
+          const pct = (e.clientX - rect.left) / rect.width;
+          ytPlayer.seekTo(pct * ytPlayer.getDuration(), true);
         });
       };
     }
@@ -192,4 +223,3 @@
 </script>
 </body>
 </html>
-
