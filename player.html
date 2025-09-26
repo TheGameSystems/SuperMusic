@@ -129,31 +129,67 @@
     }
   }
 
-  // ---------- YouTube flow ----------
+ <script>
+  // (existing code up top ...)
+
+  // --- YouTube flow with custom controls ---
   else if(type === 'youtube'){
     mp3Controls.style.display = 'none';
     youtubeContainer.classList.remove('hidden');
 
-    const id = videoId || params.get('url'); // accept either param name
+    const id = videoId || params.get('url'); 
     if(!id){
       showMessage('No YouTube video ID provided', true);
     } else {
-      // Use plain embed iframe — simpler and more reliable
-      const iframe = document.createElement('iframe');
-      // autoplay=1 may be blocked by browser policies; playsinline=1 helps on mobile
-      iframe.src = `https://www.youtube.com/embed/${encodeURIComponent(id)}?autoplay=1&controls=1&rel=0&playsinline=1`;
-      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
-      iframe.allowFullscreen = true;
-      youtubeContainer.appendChild(iframe);
-      showMessage('YouTube embed loaded. Autoplay may be blocked by browser — press play in the player if needed.');
+      // Load IFrame Player API
+      const tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.body.appendChild(tag);
+
+      let ytPlayer;
+      window.onYouTubeIframeAPIReady = function(){
+        ytPlayer = new YT.Player('youtubePlayer', {
+          height: '360',
+          width: '640',
+          videoId: id,
+          playerVars: {
+            controls: 0, // hide YouTube controls
+            modestbranding: 1,
+            rel: 0
+          },
+          events: {
+            onReady: () => showMessage('YouTube video loaded. Use custom controls below.')
+          }
+        });
+      };
+
+      // wire up custom controls
+      document.getElementById('ytPlayPause').addEventListener('click', () => {
+        if(!ytPlayer) return;
+        const state = ytPlayer.getPlayerState();
+        if(state === YT.PlayerState.PLAYING){
+          ytPlayer.pauseVideo();
+          document.getElementById('ytPlayPause').textContent = '▶ Play';
+        } else {
+          ytPlayer.playVideo();
+          document.getElementById('ytPlayPause').textContent = '⏸ Pause';
+        }
+      });
+
+      document.getElementById('ytRewind').addEventListener('click', () => {
+        if(ytPlayer){
+          ytPlayer.seekTo(Math.max(0, ytPlayer.getCurrentTime() - 10), true);
+        }
+      });
+
+      document.getElementById('ytForward').addEventListener('click', () => {
+        if(ytPlayer){
+          ytPlayer.seekTo(ytPlayer.getCurrentTime() + 10, true);
+        }
+      });
     }
   }
 
-  else {
-    // unknown type -> show message
-    mp3Controls.style.display = 'none';
-    showMessage('Unknown or missing type parameter. Use index.html to open the player.', true);
-  }
 
   // ---------- MP3 helper functions ----------
   function initMp3Controls(){
