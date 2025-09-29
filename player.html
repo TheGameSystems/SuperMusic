@@ -130,27 +130,53 @@
 
   // ---- YouTube Flow ----
   else if(type === 'youtube'){
-    mp3Controls.style.display = 'none'; // ✅ hide MP3 section
-    youtubeContainer.classList.remove('hidden');
+  mp3Controls.style.display = 'none';
+  youtubeContainer.classList.remove('hidden');
 
-    const id = videoId || params.get('url');
-    if(!id){
-      showMessage('No YouTube ID provided', true);
-    } else {
-      // Load YouTube API
-      const tag = document.createElement('script');
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.body.appendChild(tag);
+  const id = videoId || params.get('url');
+  if(!id){
+    showMessage('No YouTube ID provided', true);
+  } else {
+    // 🔹 Fetch YouTube video title
+    fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${id}&format=json`)
+      .then(res => res.json())
+      .then(data => {
+        titleEl.textContent = data.title;
+        coverEl.textContent = data.title.slice(0,2).toUpperCase();
+      })
+      .catch(()=> showMessage('Could not fetch video title'));
 
-      let ytPlayer, ytInterval;
-      window.onYouTubeIframeAPIReady = function(){
-        ytPlayer = new YT.Player('youtubePlayer', {
-          videoId: id,
-          playerVars: { controls: 0, modestbranding: 1, rel: 0 },
-          events: {
-            onReady: () => {
-              showMessage('YouTube audio loaded. Use the custom buttons.');
-              ytDurationEl.textContent = formatTime(ytPlayer.getDuration());
+    // Load YouTube API
+    const tag = document.createElement('script');
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.body.appendChild(tag);
+
+    let ytPlayer, ytInterval;
+    window.onYouTubeIframeAPIReady = function(){
+      ytPlayer = new YT.Player('youtubePlayer', {
+        videoId: id,
+        playerVars: { controls: 0, modestbranding: 1, rel: 0 },
+        events: {
+          onReady: () => {
+            showMessage('YouTube audio loaded. Use the custom buttons.');
+            ytDurationEl.textContent = formatTime(ytPlayer.getDuration());
+
+            ytInterval = setInterval(()=>{
+              if(ytPlayer && ytPlayer.getCurrentTime){
+                const cur = ytPlayer.getCurrentTime();
+                const dur = ytPlayer.getDuration();
+                ytCurrentTimeEl.textContent = formatTime(cur);
+                ytDurationEl.textContent = formatTime(dur);
+                ytProgressFill.style.width = (cur/dur*100)+'%';
+              }
+            }, 1000);
+          }
+        }
+      });
+      ...
+    }
+  }
+}
 
               // update progress bar every second
               ytInterval = setInterval(()=>{
